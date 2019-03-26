@@ -22,3 +22,4 @@ run it with with a model with the last fully-connected layer removed (embedding 
 Example:
 `python3 teachable.py --model downloaded-models/mobilenet_v1_1.0_224_quant_embedding_extractor_edgetpu.tflite`
 
+Can run standalone if you have already installed all Coral TPU libraries.
