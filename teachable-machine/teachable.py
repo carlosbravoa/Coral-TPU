@@ -28,16 +28,18 @@ from PIL import Image
 
 import cv2
 import pygame
+import numpy as np
 
 class TeachableMachine(object):
 
-  def __init__(self, model_path, kNN=3, buffer_length=4):
-    self._engine = kNNEmbeddingEngine(model_path, kNN)
+  def __init__(self, model_path, kNN=3, buffer_length=4, session=False):
+    self._engine = kNNEmbeddingEngine(model_path, kNN, session=session)
     self._buffer = deque(maxlen = buffer_length)
     self._kNN = kNN
     self._start_time = time.time()
     self._frame_times = deque(maxlen=40)
     self.clean_shutdown = False
+    self.session_name = session
 
     BLACK = (0,0,0)
     WIDTH = 800
@@ -55,7 +57,7 @@ class TeachableMachine(object):
 
         addedMsg = ""
         if category:
-            if category == 0: 
+            if category == 0 or category == '0': 
                 self._engine.clear() # Hitting button 0 resets
             else: 
                 self._engine.addEmbedding(emb, category) # otherwise the button # is the class
@@ -72,20 +74,32 @@ class TeachableMachine(object):
         #print(status)
         return status
 
-  def saveTrainedModel(self, model_name):
-        #self._engine.SaveModel(model_name) #Not yet implemented
-        print("Saving is pending...")
+  def saveTrainedModel(self):
+
+    if self.session_name:
+        print("Saving...")
+        #This sould be on the class or outside here!
+        #print(self._engine._embeddings)
+        np.save(self.session_name, self._engine._embeddings)
+        #print(type(self._engine._labels))
+        with open(self.session_name + ".txt", "w") as file:
+            file.write(str(self._engine._labels))
+        print("Done")
+    else:
+        print("No session name given. Saving is disabled")
+  
 
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help='File path of Tflite model.')
-    parser.add_argument('--testui', dest='testui', action='store_true',
-                        help='Run test of UI. Ctrl-C to abort.')
+    parser.add_argument('--session', help='The name of the learning data for saving and resuming', default=False)
+
 
     args = parser.parse_args()
 
-    print('Initialize Model.')
-    teachable = TeachableMachine(args.model)
+    print('Initializing Model.')
+
+    teachable = TeachableMachine(args.model, session=args.session)
     pygame.init()
 
     assert os.path.isfile(args.model)
@@ -95,7 +109,7 @@ def main(args):
             category = None
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    #teachable.saveTrainedModel("re-trained.tflite")
+                    teachable.saveTrainedModel()
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:

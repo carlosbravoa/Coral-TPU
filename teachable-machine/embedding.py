@@ -53,7 +53,7 @@ class EmbeddingEngine(BasicEngine):
 class kNNEmbeddingEngine(EmbeddingEngine):
   """Extends embedding engine to also provide kNearest Neighbor detection."""
     
-  def __init__(self, model_path, kNN=3):
+  def __init__(self, model_path, kNN=3, session=False):
     """Creates a EmbeddingEngine with given model and labels.
 
     Args:
@@ -65,11 +65,42 @@ class kNNEmbeddingEngine(EmbeddingEngine):
     EmbeddingEngine.__init__(self, model_path)
     self.clear()
     self._kNN = kNN
+    if session:
+      self.load(session)
+    else:
+      print("No session name specified. Saving and loading is disabled")
 
   def clear(self):
     self._labels = []
     self._embedding_map = defaultdict(list) 
     self._embeddings = None 
+
+  def load(self, session):
+    print("Loading...")
+    try: 
+      with open(session + ".txt", "r") as file:
+          labels = eval(file.readline())
+          self._labels = labels
+      file.close()
+
+      embs = np.load(session + ".npy")
+      self._embeddings = embs
+      label_count = len(labels)
+
+      if label_count > 0: 
+        print("Labels count: " + str(len(labels)))
+        print("Embedding count: " + str(len(embs)))
+
+        for i in range(len(labels)): #There must be a more elegant way
+          self._embedding_map[labels[i]].append(embs[i])
+        if len(self._embedding_map) == label_count:
+          print("Data loaded correctly")
+      else:
+        print("Could not load data. The source is empty")
+        self.clear()
+
+    except FileNotFoundError:
+      print("File not found. Continuing with an empty session")
 
   def addEmbedding(self, emb, label):
     normal = emb/np.sqrt((emb**2).sum())
@@ -88,6 +119,7 @@ class kNNEmbeddingEngine(EmbeddingEngine):
       self._labels.extend([label]*emb_block.shape[0])
 
     self._embeddings = np.concatenate(emb_blocks, axis=0)
+    
 
   def kNNEmbedding(self, query_emb):
     if self._embeddings is None: return None   
