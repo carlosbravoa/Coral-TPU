@@ -19,7 +19,12 @@ This code is just an adaptation from the "Teachable machine" example, published 
 
 
 run it with with a model with the last fully-connected layer removed (embedding extractor)
+
 Example:
 `python3 teachable.py --model downloaded-models/mobilenet_v1_1.0_224_quant_embedding_extractor_edgetpu.tflite`
+
+If you want to save it for later use, you can save the session wby specifying a session name:
+      `python3 teachable.py --model downloaded-models/mobilenet_v1_1.0_224_quant_embedding_extractor_edgetpu.tflite --session my_session1`
+(It will create the file containing the labels and the embeddings created during the session)
 
 Can run standalone if you have already installed all Coral TPU libraries.
