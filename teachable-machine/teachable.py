@@ -7,23 +7,23 @@ usage of a method called transfer learning
 https://coral.withgoogle.com/tutorials/edgetpu-retrain-classification-ondevice/
 
 
-This code is just an adaptation from the "Teachable machine" example, published in 
+This code is just an adaptation from the "Teachable machine" example, published in
 Raspbery PI Magazine #79.
-It has been adapted to run within a desktop (a keyboard and a screen is needed), 
-and adapted to run in a Linux machine, using CV2 and pygame. For running it in a 
-Raspberry pi, the camera read can be replaced by picamera libraries and if you want 
+It has been adapted to run within a desktop (a keyboard and a screen is needed),
+and adapted to run in a Linux machine, using CV2 and pygame. For running it in a
+Raspberry pi, the camera read can be replaced by picamera libraries and if you want
 to get rid of cv2, the draw_text function can use pygame libraries too.
 
 
 run it with with a model with the last fully-connected layer removed (embedding extractor)
 
 Example:
-      python3 teachable.py \ 
+      python3 teachable.py \
         --model downloaded-models/mobilenet_v1_1.0_224_quant_embedding_extractor_edgetpu.tflite
 
 If you want to save it for later use, you can save the session wby specifying a session name:
       python3 teachable.py \
-        --model downloaded-models/mobilenet_v1_1.0_224_quant_embedding_extractor_edgetpu.tflite \ 
+        --model downloaded-models/mobilenet_v1_1.0_224_quant_embedding_extractor_edgetpu.tflite \
         --session my_session1
  (It will create the file containing the labels and the embeddings created during the session)
 
@@ -32,15 +32,18 @@ import argparse
 import sys
 import os
 import time
-from collections import deque, Counter
-from functools import partial
-
-from embedding import kNNEmbeddingEngine
-from PIL import Image
 
 import cv2
 import pygame
 import numpy as np
+
+from collections import deque, Counter
+from functools import partial
+from PIL import Image
+
+from embedding import kNNEmbeddingEngine
+
+
 
 class TeachableMachine(object):
 
@@ -67,26 +70,25 @@ class TeachableMachine(object):
         self._buffer.append(self._engine.kNNEmbedding(emb))
         classification = Counter(self._buffer).most_common(1)[0][0]
 
-        addedMsg = ""
+        added_message = ""
         if category:
-            if category == 0 or category == '0': 
+            if category == 0 or category == '0':
                 self._engine.clear() # Hitting button 0 resets
-            else: 
+            else:
                 self._engine.addEmbedding(emb, category) # otherwise the button # is the class
-                addedMsg = "ADDED " + category
-            
+                added_message = "ADDED " + category
         self._frame_times.append(time.time())
         fps = len(self._frame_times)/float(self._frame_times[-1] - self._frame_times[0] + 0.001)
 
         # Print/Display results
-        
+
         status = 'fps: %.1f; #examples: %d; Class: % 7s; '%(
-                fps, self._engine.exampleCount(),
-                classification or 0) + addedMsg
+            fps, self._engine.exampleCount(),
+            classification or 0) + added_message
         #print(status)
         return status
 
-    def saveTrainedModel(self):
+    def save_trained_model(self):
 
         if self.session_name:
             print("Saving...")
@@ -103,9 +105,9 @@ class TeachableMachine(object):
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help='File path of Tflite model.')
-    parser.add_argument('--session', 
-        help='The name of the learning data for saving and resuming', default=False)
-
+    parser.add_argument('--session',
+                        help='The name of the learning data for saving and resuming',
+                        default=False)
 
     args = parser.parse_args()
 
@@ -121,7 +123,7 @@ def main(args):
         category = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                teachable.saveTrainedModel()
+                teachable.save_trained_model()
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
@@ -141,14 +143,14 @@ def main(args):
 
         #put back the image into the screen using a pygame image
         pygameimage = pygame.image.frombuffer(
-            new_cv2_im.tostring(), new_cv2_im.shape[1::-1],"RGB")
+            new_cv2_im.tostring(), new_cv2_im.shape[1::-1], "RGB")
         teachable.screen.blit(pygameimage, (0, 0))
         pygame.display.update()
 
 def draw_text(image_np, label, pos=0):
     font = cv2.FONT_HERSHEY_SIMPLEX
     p1 = (0, pos*30+20)
-    cv2.rectangle(image_np, (p1[0], p1[1]-20), (800, p1[1]+10), color=(0, 255, 0), thickness = -1)
+    cv2.rectangle(image_np, (p1[0], p1[1]-20), (800, p1[1]+10), color=(0, 255, 0), thickness=-1)
     cv2.putText(image_np, label, p1, font, 0.8, (0, 0, 0), 2, cv2.LINE_AA)
 
 if __name__ == '__main__':
