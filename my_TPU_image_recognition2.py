@@ -46,6 +46,7 @@ from edgetpu.detection.engine import DetectionEngine
 from PIL import Image
 from PIL import ImageDraw
 import numpy as np
+from collections import deque, Counter
 
 import pygame
 import time
@@ -115,12 +116,10 @@ def main():
 
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
-        #cv2_im = cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB)  #The CV2 Way
-        #pil_im = Image.fromarray(cv2_im)
-        pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB')
+        cv2_im = cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB)
+        pil_im = Image.fromarray(cv2_im)
+        #pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB')
         #This is the tf utils way for the transformation. It needs numpy
-
-        
 
         if args.mode == "OBJECT_DETECTION":
             ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
@@ -148,16 +147,17 @@ def main():
                     draw_text(cv2_im, 'No classification detected!')
 
         frame_times.append(time.time())
-        fps = len(self._frame_times)/float(self._frame_times[-1] - self._frame_times[0] + 0.001)
-        draw_text(cv2_im, "{.1f}".format(fps))
+        fps = len(frame_times)/float(frame_times[-1] - frame_times[0] + 0.001)
+        draw_text(cv2_im, "{:.1f}".format(fps))
 
         #flipping the image: cv2.flip(cv2_im, 1) # Just needed if you are using a webcam as a mirror
-        the_image = cv2.resize(cv2_im, (800, 600))
-
+        #cv2_im = cv2.resize(cv2_im, (800, 600))
+	
         #put back the image into the screen using a pygame image
         pygameimage = pygame.image.frombuffer(
-            the_image.tostring(), the_image.shape[1::-1], "RGB")
-        teachable.screen.blit(pygameimage, (0, 0))
+            cv2_im.tostring(), cv2_im.shape[1::-1], "RGB")
+             
+        screen.blit(pygameimage, (0, 0))
         pygame.display.update()
 
     #end
@@ -167,12 +167,12 @@ def draw_rectangles(rectangles, image_np, label=None):
     #font = cv2.FONT_HERSHEY_SIMPLEX
     p1 = (int(rectangles[0][0]), int(rectangles[0][1]))
     p2 = (int(rectangles[1][0]), int(rectangles[1][1]))
-    cv2.rectangle(image_np, p1, p2, color=(255, 0, 0), thickness=3)
+    cv2.rectangle(image_np, p1, p2, color=(255, 0, 0), thickness=2)
     if label:
         cv2.rectangle(image_np, (p1[0], p1[1]-20), (p2[0], p1[1]+10),
                       color=(255, 0, 0),
                       thickness=-1)
-        cv2.putText(image_np, label, p1, FONT, 1, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(image_np, label, p1, FONT, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
 
 def draw_text(image_np, label, pos=0):
     font = cv2.FONT_HERSHEY_SIMPLEX
