@@ -47,6 +47,8 @@ from edgetpu.detection.engine import DetectionEngine
 from PIL import Image
 from PIL import ImageDraw
 import numpy as np
+import time
+from collections import deque, Counter
 
 #For webcam capture and drawing boxes
 import cv2
@@ -93,16 +95,22 @@ def main():
 
     # Initialize the camera
     cam = cv2.VideoCapture(camera)
+
+    # Initialize the timer for fps
+    start_time = time.time()
+    frame_times = deque(maxlen=40)
+
     while True:
         ret, cv2_im = cam.read()
 
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
-        #cv2_im = cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB)  #The CV2 Way
-        #pil_im = Image.fromarray(cv2_im)
-        pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB')
-        #This is the tf utils way for the transformation. It needs numpy
-
+        #The CV2 Way
+        pil_im = Image.fromarray(cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB))
+        #pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB') 
+        #This is the tf utils way for the transformation. It needs numpy, and is slightly slower
+        
+        
         if args.mode == "OBJECT_DETECTION":
             ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
                                          relative_coord=False, top_k=10)
@@ -128,9 +136,16 @@ def main():
                 else:
                     draw_text(cv2_im, 'No classification detected!')
 
+        frame_times.append(time.time())
+        fps = len(frame_times)/float(frame_times[-1] - frame_times[0] + 0.001)
+        draw_text(cv2_im, "{:.1f}".format(fps))
+
+
         #flipping the image: cv2.flip(cv2_im, 1)
-        cv2.imshow('object detection', cv2.resize(cv2_im, (800, 600)))
-        if cv2.waitKey(25) & 0xFF == ord('q'):
+	
+	#cv2_im = cv2.resize(cv2_im, (800, 600))
+        cv2.imshow('object detection', cv2_im)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break
 
@@ -146,6 +161,8 @@ def draw_rectangles(rectangles, image_np, label=None):
                       color=(255, 0, 0),
                       thickness=-1)
         cv2.putText(image_np, label, p1, FONT, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    #imgname = str(time.time())
+    #cv2.imwrite('/home/pi/development/Coral-TPU/imgs/' + imgname + '.jpg', image_np)
 
 def draw_text(image_np, label, pos=0):
     p1 = (0, pos*30+20)
