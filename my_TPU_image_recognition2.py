@@ -48,6 +48,7 @@ from PIL import ImageDraw
 import numpy as np
 
 import pygame
+import time
 
 #For webcam capture and drawing boxes
 import cv2
@@ -105,6 +106,10 @@ def main():
     screen.fill(BLACK)
     pygame.init()
 
+    # Initialize the timer for fps
+    start_time = time.time()
+    frame_times = deque(maxlen=40)
+
     while True:
         ret, cv2_im = cam.read()
 
@@ -114,6 +119,9 @@ def main():
         #pil_im = Image.fromarray(cv2_im)
         pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB')
         #This is the tf utils way for the transformation. It needs numpy
+
+        frame_times.append(time.time())
+        fps = len(self._frame_times)/float(self._frame_times[-1] - self._frame_times[0] + 0.001)
 
         if args.mode == "OBJECT_DETECTION":
             ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
@@ -125,6 +133,7 @@ def main():
                         if labels:
                             label = labels[obj.label_id] + " - {0:.2f}".format(obj.score)
                         draw_rectangles(obj.bounding_box, cv2_im, label=label)
+                        draw_text(cv2_im, "{.1f}".format(fps))
             else:
                 draw_text(cv2_im, 'No object detected!')
 
