@@ -53,7 +53,12 @@ from collections import deque, Counter
 #For webcam capture and drawing boxes
 import cv2
 
+# Parameters for visualizing the labels and boxes
 FONT = cv2.FONT_HERSHEY_SIMPLEX
+FONT_SIZE = 0.7
+LABEL_BOX_PADDING = 5
+LABEL_BOX_OFFSET_TOP = int(20 * FONT_SIZE) + LABEL_BOX_PADDING
+LINE_WEIGHT = 1
 
 # Function to read labels from text files.
 def read_label_file(file_path):
@@ -117,7 +122,7 @@ def main():
             if ans:
                 print("{} object(s) detected".format(len(ans)))
                 for obj in ans:
-                    if obj.score > 0.5:
+                    if obj.score > 0.4:
                         if labels:
                             label = labels[obj.label_id] + " - {0:.2f}".format(obj.score)
                         draw_rectangles(obj.bounding_box, cv2_im, label=label)
@@ -135,10 +140,10 @@ def main():
                     i += 1
                 else:
                     draw_text(cv2_im, 'No classification detected!')
-
+        lastInferenceTime = engine.get_inference_time()
         frame_times.append(time.time())
         fps = len(frame_times)/float(frame_times[-1] - frame_times[0] + 0.001)
-        draw_text(cv2_im, "{:.1f}".format(fps))
+        draw_text(cv2_im, "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
 
 
         #flipping the image: cv2.flip(cv2_im, 1)
@@ -147,6 +152,7 @@ def main():
         cv2.imshow('object detection', cv2_im)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
+            exit()
             break
 
     #end
@@ -155,19 +161,19 @@ def main():
 def draw_rectangles(rectangles, image_np, label=None):
     p1 = (int(rectangles[0][0]), int(rectangles[0][1]))
     p2 = (int(rectangles[1][0]), int(rectangles[1][1]))
-    cv2.rectangle(image_np, p1, p2, color=(255, 0, 0), thickness=3)
+    cv2.rectangle(image_np, p1, p2, color=(255, 0, 0), thickness=LINE_WEIGHT)
     if label:
-        cv2.rectangle(image_np, (p1[0], p1[1]-20), (p2[0], p1[1]+10),
+        cv2.rectangle(image_np, (p1[0], p1[1]-LABEL_BOX_OFFSET_TOP), (p2[0], p1[1] + LABEL_BOX_PADDING),
                       color=(255, 0, 0),
                       thickness=-1)
-        cv2.putText(image_np, label, p1, FONT, 1, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(image_np, label, p1, FONT, FONT_SIZE, (255, 255, 255), 1, cv2.LINE_AA)
     #imgname = str(time.time())
     #cv2.imwrite('/home/pi/development/Coral-TPU/imgs/' + imgname + '.jpg', image_np)
 
 def draw_text(image_np, label, pos=0):
     p1 = (0, pos*30+20)
-    cv2.rectangle(image_np, (p1[0], p1[1]-20), (800, p1[1]+10), color=(0, 255, 0), thickness=-1)
-    cv2.putText(image_np, label, p1, FONT, 0.8, (0, 0, 0), 2, cv2.LINE_AA)
+    #cv2.rectangle(image_np, (p1[0], p1[1]-20), (800, p1[1]+10), color=(0, 255, 0), thickness=-1)
+    cv2.putText(image_np, label, p1, FONT, FONT_SIZE, (0, 0, 0), 1, cv2.LINE_AA)
 
 if __name__ == '__main__':
     main()
