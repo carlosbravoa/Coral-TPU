@@ -55,6 +55,7 @@ import cv2
 
 #picamera
 from picamera import PiCamera
+import io
 
 # Parameters for visualizing the labels and boxes
 FONT = cv2.FONT_HERSHEY_SIMPLEX
