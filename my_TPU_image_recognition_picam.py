@@ -119,7 +119,7 @@ def main():
         stream.seek(0)
         pil_im = Image.open(stream)
         cv2_im = np.array(pil_im)
-        cv2_im = cv2.cvtColor(cv2_im, cv2.cv.CV_BGR2RGB)
+        cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
         #The CV2 Way
