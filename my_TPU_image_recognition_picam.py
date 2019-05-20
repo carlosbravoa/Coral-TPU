@@ -133,7 +133,7 @@ def main():
         if args.mode == "OBJECT_DETECTION":
             ans = []
             #ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
-                                         relative_coord=False, top_k=10)
+            #                             relative_coord=False, top_k=10)
             if ans:
                 print("{} object(s) detected".format(len(ans)))
                 for obj in ans:
