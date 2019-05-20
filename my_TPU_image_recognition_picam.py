@@ -104,7 +104,7 @@ def main():
     # Initialize the camera
     #cam = cv2.VideoCapture(camera)
     camera = PiCamera()
-    time.sleep(2).
+    time.sleep(2)
     # Create the in-memory stream
     stream = io.BytesIO()
 
