@@ -116,6 +116,7 @@ def main():
 
     while True:
         #ret, cv2_im = cam.read()
+        stream = io.BytesIO() #wipe the contents
         camera.capture(stream, format='jpeg')
         stream.seek(0)
         pil_im = Image.open(stream)
