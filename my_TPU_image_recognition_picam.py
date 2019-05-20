@@ -53,6 +53,9 @@ from collections import deque, Counter
 #For webcam capture and drawing boxes
 import cv2
 
+#picamera
+from picamera import PiCamera
+
 # Parameters for visualizing the labels and boxes
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 FONT_SIZE = 0.7
@@ -99,19 +102,26 @@ def main():
     camera = args.camera if args.camera else 0
 
     # Initialize the camera
-    cam = cv2.VideoCapture(camera)
+    #cam = cv2.VideoCapture(camera)
+    camera = PiCamera()
+    time.sleep(2).
+    # Create the in-memory stream
+    stream = io.BytesIO()
 
     # Initialize the timer for fps
     start_time = time.time()
     frame_times = deque(maxlen=40)
 
     while True:
-        ret, cv2_im = cam.read()
+        #ret, cv2_im = cam.read()
+        camera.capture(stream, format='jpeg')
+        stream.seek(0)
+        pil_image = Image.open(stream)
 
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
         #The CV2 Way
-        pil_im = Image.fromarray(cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB))
+        #pil_im = Image.fromarray(cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB))
         #pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB') 
         #This is the tf utils way for the transformation. It needs numpy, and is slightly slower
         
@@ -156,7 +166,7 @@ def main():
             break
 
     #end
-    cv2.VideoCapture.release(cam)
+    #cv2.VideoCapture.release(cam)
 
 def draw_rectangles(rectangles, image_np, label=None):
     p1 = (int(rectangles[0][0]), int(rectangles[0][1]))
