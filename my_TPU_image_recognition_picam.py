@@ -118,7 +118,7 @@ def main():
         camera.capture(stream, format='jpeg')
         stream.seek(0)
         pil_im = Image.open(stream)
-        cv2_im = numpy.array(pil_im)
+        cv2_im = np.array(pil_im)
         cv2_im = cv2.cvtColor(cv2_im, cv2.cv.CV_BGR2RGB)
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
