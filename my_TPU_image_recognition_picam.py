@@ -117,7 +117,7 @@ def main():
         #ret, cv2_im = cam.read()
         camera.capture(stream, format='jpeg')
         stream.seek(0)
-        pil_image = Image.open(stream)
+        pil_im = Image.open(stream)
 
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
