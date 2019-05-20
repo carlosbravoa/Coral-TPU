@@ -131,7 +131,8 @@ def main():
         
         
         if args.mode == "OBJECT_DETECTION":
-            ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
+            ans = []
+            #ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
                                          relative_coord=False, top_k=10)
             if ans:
                 print("{} object(s) detected".format(len(ans)))
@@ -158,7 +159,7 @@ def main():
         frame_times.append(time.time())
         fps = len(frame_times)/float(frame_times[-1] - frame_times[0] + 0.001)
         draw_text(cv2_im, "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
-        print("inference time: " + "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
+        print("FPS / Inference time: " + "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
 
         #flipping the image: cv2.flip(cv2_im, 1)
 	
