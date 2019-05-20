@@ -118,9 +118,9 @@ def main():
         #ret, cv2_im = cam.read()
         stream = io.BytesIO() #wipe the contents
         camera.capture(stream, format='jpeg')
-        stream.seek(0)
-        pil_im = Image.open(stream)
-        cv2_im = np.array(pil_im)
+        ####stream.seek(0)
+        ####pil_im = Image.open(stream)
+        ####cv2_im = np.array(pil_im)
         #cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
@@ -129,6 +129,15 @@ def main():
         #pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB') 
         #This is the tf utils way for the transformation. It needs numpy, and is slightly slower
         
+        # Construct a numpy array from the stream
+        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+        
+        # "Decode" the image from the array, preserving colour
+        cv2_im = cv2.imdecode(data, 1)
+        
+        # OpenCV returns an array with data in BGR order. If you want RGB instead
+        # use the following...
+        cv2_im = cv2_im[:, :, ::-1]
         
         if args.mode == "OBJECT_DETECTION":
             ans = []
