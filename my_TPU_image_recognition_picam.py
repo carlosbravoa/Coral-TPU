@@ -124,9 +124,8 @@ def main():
         cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         
         if args.mode == "OBJECT_DETECTION":
-            ans = []
-            #ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
-            #                             relative_coord=False, top_k=10)
+            ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
+                                         relative_coord=False, top_k=10)
             if ans:
                 print("{} object(s) detected".format(len(ans)))
                 for obj in ans:
@@ -135,8 +134,7 @@ def main():
                             label = labels[obj.label_id] + " - {0:.2f}".format(obj.score)
                         draw_rectangles(obj.bounding_box, cv2_im, label=label)
             else:
-                #draw_text(cv2_im, 'No object detected!')
-                pass
+                draw_text(cv2_im, 'No object detected!')
 
         else:
             i = 0
