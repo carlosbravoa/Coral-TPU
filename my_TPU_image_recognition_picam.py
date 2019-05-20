@@ -137,7 +137,7 @@ def main():
         
         # OpenCV returns an array with data in BGR order. If you want RGB instead
         # use the following...
-        cv2_im = cv2_im[:, :, ::-1]
+        #cv2_im = cv2_im[:, :, ::-1]
         
         if args.mode == "OBJECT_DETECTION":
             ans = []
@@ -151,7 +151,8 @@ def main():
                             label = labels[obj.label_id] + " - {0:.2f}".format(obj.score)
                         draw_rectangles(obj.bounding_box, cv2_im, label=label)
             else:
-                draw_text(cv2_im, 'No object detected!')
+                #draw_text(cv2_im, 'No object detected!')
+                pass
 
         else:
             i = 0
