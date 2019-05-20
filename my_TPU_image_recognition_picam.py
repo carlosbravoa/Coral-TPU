@@ -106,6 +106,7 @@ def main():
     #cam = cv2.VideoCapture(camera)
     camera = PiCamera()
     time.sleep(2)
+    camera.resolution = (640, 480)
     # Create the in-memory stream
     stream = io.BytesIO()
 
