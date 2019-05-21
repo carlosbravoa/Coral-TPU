@@ -16,7 +16,7 @@ Just be sure to have run and set up the [CORAL EDGE TPU USB](https://coral.withg
 
 **There is a second example called MY_TPU_object_recognition2.py that is using pygame for displaying the video.**
 
-**A third example, called my_TPU_image_recognition_picam.py is available for using the raspberry pi camera**
+**A third example, called my_TPU_image_recognition_picam.py is available for using the raspberry pi camera** There is a better example (better performing with no dependencies with CV2 [here](https://github.com/nickoala/edgetpu-on-pi)
 
 You need to have downloaded the edgecpu tflite models and the labels from here: [Pre compiled models for edge TPU](https://coral.withgoogle.com/models/).
 
