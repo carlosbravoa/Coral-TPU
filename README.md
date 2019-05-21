@@ -14,7 +14,8 @@ For running it, follow the standard installation of the [CORAL EDGE TPU USB](htt
 
 Just be sure to have run and set up the [CORAL EDGE TPU USB](https://coral.withgoogle.com/docs/accelerator/get-started/) setup.py.
 
-**There is a second example called MY_TPU_object_recognition2.py that is using pygame for displaying the video. **
+**There is a second example called MY_TPU_object_recognition2.py that is using pygame for displaying the video.**
+
 **A third example, called my_TPU_image_recognition_picam.py is available for using the raspberry pi camera**
 
 You need to have downloaded the edgecpu tflite models and the labels from here: [Pre compiled models for edge TPU](https://coral.withgoogle.com/models/).
