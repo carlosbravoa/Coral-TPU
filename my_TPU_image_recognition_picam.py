@@ -117,7 +117,7 @@ def main():
     while True:
         #ret, cv2_im = cam.read()
         stream = io.BytesIO() #wipe the contents
-        camera.capture(stream, format='jpeg')
+        camera.capture(stream, format='jpeg', use_video_port=True)
         stream.seek(0)
         pil_im = Image.open(stream)
         cv2_im = np.array(pil_im)
@@ -127,7 +127,6 @@ def main():
             ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
                                          relative_coord=False, top_k=10)
             if ans:
-                print("{} object(s) detected".format(len(ans)))
                 for obj in ans:
                     if obj.score > 0.4:
                         if labels:
@@ -151,7 +150,7 @@ def main():
         frame_times.append(time.time())
         fps = len(frame_times)/float(frame_times[-1] - frame_times[0] + 0.001)
         draw_text(cv2_im, "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
-        print("FPS / Inference time: " + "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
+        #print("FPS / Inference time: " + "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
 
         #flipping the image: cv2.flip(cv2_im, 1)
 	
