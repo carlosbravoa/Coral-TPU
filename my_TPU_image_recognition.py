@@ -55,10 +55,10 @@ import cv2
 
 # Parameters for visualizing the labels and boxes
 FONT = cv2.FONT_HERSHEY_SIMPLEX
-FONT_SIZE = 0.7
-LABEL_BOX_PADDING = 5
-LABEL_BOX_OFFSET_TOP = int(20 * FONT_SIZE) + LABEL_BOX_PADDING
+FONT_SIZE = 0.6
+FONT_THICKNESS = 1
 LINE_WEIGHT = 1
+SHOW_CONFIDENCE_IN_LABEL = False
 
 # Function to read labels from text files.
 def read_label_file(file_path):
@@ -111,8 +111,8 @@ def main():
         #we are transforming the npimage to img, and the TPU library/utils are doing the
         #inverse process
         #The CV2 Way
-        pil_im = Image.fromarray(cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB))
-        #pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB') 
+        #pil_im = Image.fromarray(cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB))
+        pil_im = Image.fromarray(np.uint8(cv2_im)).convert('RGB') 
         #This is the tf utils way for the transformation. It needs numpy, and is slightly slower
         
         
@@ -124,7 +124,10 @@ def main():
                 for obj in ans:
                     if obj.score > 0.4:
                         if labels:
-                            label = labels[obj.label_id] + " - {0:.2f}".format(obj.score)
+                            label = labels[obj.label_id]
+                            if SHOW_CONFIDENCE_IN_LABEL:
+                                label = label + "({0:.2f})".format(obj.score)
+
                         draw_rectangles(obj.bounding_box, cv2_im, label=label)
             else:
                 draw_text(cv2_im, 'No object detected!')
@@ -146,34 +149,37 @@ def main():
         draw_text(cv2_im, "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
 
 
-        #flipping the image: cv2.flip(cv2_im, 1)
-	
-	#cv2_im = cv2.resize(cv2_im, (800, 600))
+        # flipping the image: 
+        #cv2.flip(cv2_im, 1)
+        #resizing the image
+        #cv2_im = cv2.resize(cv2_im, (800, 600))
         cv2.imshow('object detection', cv2_im)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
-            exit()
             break
 
     #end
-    cv2.VideoCapture.release(cam)
+    exit()
 
 def draw_rectangles(rectangles, image_np, label=None):
+    BOXCOLOR = (255, 0, 0)
     p1 = (int(rectangles[0][0]), int(rectangles[0][1]))
     p2 = (int(rectangles[1][0]), int(rectangles[1][1]))
-    cv2.rectangle(image_np, p1, p2, color=(255, 0, 0), thickness=LINE_WEIGHT)
+    cv2.rectangle(image_np, p1, p2, color=BOXCOLOR, thickness=LINE_WEIGHT)
     if label:
-        cv2.rectangle(image_np, (p1[0], p1[1]-LABEL_BOX_OFFSET_TOP), (p2[0], p1[1] + LABEL_BOX_PADDING),
-                      color=(255, 0, 0),
-                      thickness=-1)
-        cv2.putText(image_np, label, p1, FONT, FONT_SIZE, (255, 255, 255), 1, cv2.LINE_AA)
+        size = cv2.getTextSize(label, FONT, FONT_SIZE, FONT_THICKNESS)
+        center = p1[0] + 5, p1[1] + 5 + size[0][1]
+        pt2 = p1[0] + 10 + size[0][0], p1[1] + 10 + size[0][1]
+        cv2.rectangle(image_np, p1, pt2, color = (255, 0, 0), thickness=-1)
+
+        cv2.putText(image_np, label, center, FONT, FONT_SIZE, (255, 255, 255), FONT_THICKNESS, cv2.LINE_AA)
     #imgname = str(time.time())
     #cv2.imwrite('/home/pi/development/Coral-TPU/imgs/' + imgname + '.jpg', image_np)
 
 def draw_text(image_np, label, pos=0):
     p1 = (0, pos*30+20)
     #cv2.rectangle(image_np, (p1[0], p1[1]-20), (800, p1[1]+10), color=(0, 255, 0), thickness=-1)
-    cv2.putText(image_np, label, p1, FONT, FONT_SIZE, (0, 0, 0), 1, cv2.LINE_AA)
+    cv2.putText(image_np, label, p1, FONT, FONT_SIZE, (0, 255, 0), 1, cv2.LINE_AA)
 
 if __name__ == '__main__':
     main()
