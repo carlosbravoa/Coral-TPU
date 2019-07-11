@@ -1,6 +1,7 @@
 # Installing Coral Edge TPU libraries on a Raspberry PI 4
 
 1. Install the opencv libraries (not needed for coral edge, just for running examples in this repo!)
+
 `sudo apt install python3-opencv`
 
 2. Follow the installation steps of the coral edge TPU
