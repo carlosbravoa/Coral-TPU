@@ -3,7 +3,7 @@
 
 Examples for playing with the [coral edge TPU accelerator](https://coral.withgoogle.com/tutorials/accelerator/).
 
-**Update July 2019. It works smoothly in Raspberry pi4. There is a small modification needed in the edgeTPU installation script and the steps needed for linking the edge_tpu lib**
+**Update July 2019. It works smoothly in Raspberry pi4. There is a small modification needed in the edgeTPU installation script and the steps needed for linking the edge_tpu lib [Instructions here](install-edgetpu-rpi4.md)**
 
 These examples are a demonstration for object recognition and image classification in real time, using CORAL EDGE TPU, using a coninuous streaming from a camera (different from the base examples, where they just classify static images) and drawing the results in realtime on the screen.
 
@@ -14,7 +14,7 @@ My_TPU_object_recognition.py is a demo for object detection or image classificat
 
 **This example runs also on a raspberry PI, using an usb camera.**
 
-For running it, follow the standard installation of the [CORAL EDGE TPU USB](https://coral.withgoogle.com/docs/accelerator/get-started/), plus installing Python-OpenCV (for Raspberry Pi, it may need compiling!)
+For running it, follow the standard installation of the [CORAL EDGE TPU USB](https://coral.withgoogle.com/docs/accelerator/get-started/), plus installing Python-OpenCV (sudo apt install python3-opencv)
 
 Just be sure to have run and set up the [CORAL EDGE TPU USB](https://coral.withgoogle.com/docs/accelerator/get-started/) setup.py.
 
@@ -25,19 +25,21 @@ Just be sure to have run and set up the [CORAL EDGE TPU USB](https://coral.withg
 You need to have downloaded the edgecpu tflite models and the labels from here: [Pre compiled models for edge TPU](https://coral.withgoogle.com/models/).
 
 Example for runnining any of these 3 scripts (It has to be executed from desktop, since the results are displayed in real-time): 
-
+~~~~
   - Object detection:
     python3 ./my_TPU_image_recognition.py \
     --model=models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
     --label=models/coco_labels.txt --mode=OBJECT_DETECTION \
     --camera=0
+~~~~
 
+~~~~
   - Image classification:
     python3 ./my_TPU_image_recognition.py \
     --model=models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
     --label=models/coco_labels.txt --mode=IMAGE_CLASSIFICATION \
     --camera=0
-
+~~~~
 
 ## The teachable machine
 
