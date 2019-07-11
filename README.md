@@ -3,7 +3,7 @@
 
 Examples for playing with the [coral edge TPU accelerator](https://coral.withgoogle.com/tutorials/accelerator/).
 
-**Update July 2019. It works smoothly in Raspberry pi4. There is a small modification needed in the edgeTPU installation script and steps needed**
+**Update July 2019. It works smoothly in Raspberry pi4. There is a small modification needed in the edgeTPU installation script and the steps needed for linking the edge_tpu lib**
 
 These examples are a demonstration for object recognition and image classification in real time, using CORAL EDGE TPU, using a coninuous streaming from a camera (different from the base examples, where they just classify static images) and drawing the results in realtime on the screen.
 
