@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 '''
+
+***WARNING: SPAGHETTI CODE AHEAD... USE IT AT YOUR OWN RISK ***
+
 This is a real time learning example, where an already trained model is used for
 evaluating objects and used for re-categorizing your own. This is done through the
 usage of a method called transfer learning
@@ -56,6 +59,8 @@ class TeachableMachine(object):
         self.clean_shutdown = False
         self.session_name = session
 
+        self.categoriesImageDic = dict()
+
         BLACK = (0, 0, 0)
         WIDTH = 800
         HEIGHT = 600
@@ -63,12 +68,15 @@ class TeachableMachine(object):
 
         self.screen.fill(BLACK)
 
-    def classify(self, img, category=None):
+    def classify(self, img, np_img, category=None):
         # Classify current image and determine
 
         emb = self._engine.DetectWithImage(img)
         self._buffer.append(self._engine.kNNEmbedding(emb))
         classification = Counter(self._buffer).most_common(1)[0][0]
+        
+        if not classification is None:
+        	displayThumbnail(np_img, self.categoriesImageDic[classification])
 
         added_message = ""
         if category:
@@ -77,6 +85,9 @@ class TeachableMachine(object):
             else:
                 self._engine.addEmbedding(emb, category) # otherwise the button # is the class
                 added_message = "ADDED " + category
+                self.categoriesImageDic[category] = cv2.resize(np_img, (200,100))
+                #displayThumbnail(np_img, self.categoriesImageDic[category])
+
         self._frame_times.append(time.time())
         fps = len(self._frame_times)/float(self._frame_times[-1] - self._frame_times[0] + 0.001)
 
@@ -135,7 +146,7 @@ def main(args):
         pil_im = Image.fromarray(new_cv2_im)
 
         #Classify the image
-        status = teachable.classify(pil_im, category)
+        status = teachable.classify(pil_im, new_cv2_im, category)
 
         #Draw the results
         draw_text(new_cv2_im, status)
@@ -152,6 +163,11 @@ def draw_text(image_np, label, pos=0):
     p1 = (0, pos*30+20)
     cv2.rectangle(image_np, (p1[0], p1[1]-20), (800, p1[1]+10), color=(0, 255, 0), thickness=-1)
     cv2.putText(image_np, label, p1, font, 0.8, (0, 0, 0), 2, cv2.LINE_AA)
+
+def displayThumbnail(background, overlay):
+	rows,cols,channels = overlay.shape
+	overlay=cv2.addWeighted(background[250:250+rows, 0:0+cols],0.5,overlay,0.5,0)
+	background[250:250+rows, 0:0+cols ] = overlay
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
