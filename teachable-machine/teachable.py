@@ -182,8 +182,10 @@ def draw_text(image_np, label, pos=0):
 
 def displayThumbnail(background, overlay):
     rows,cols,channels = overlay.shape
+    brows, bcols, channels = background.shape
     #overlay=cv2.addWeighted(background[250:250+rows, 0:0+cols],0.5,overlay,0.5,0) @if transparency is needed
-    background[250:250+rows, 0:0+cols ] = overlay
+    #    background[250:250+rows, 0:0+cols ] = overlay
+    background[brows-rows:brows, bcols-cols:bcols ] = overlay
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
