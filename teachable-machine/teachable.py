@@ -28,7 +28,7 @@ If you want to save it for later use, you can save the session wby specifying a 
       python3 teachable.py \
         --model downloaded-models/mobilenet_v1_1.0_224_quant_embedding_extractor_edgetpu.tflite \
         --session my_session1
- (It will create the file containing the labels and the embeddings created during the session)
+ (It wipygame ll create the file containing the labels and the embeddings created during the session)
 
 '''
 import argparse
@@ -68,36 +68,24 @@ class TeachableMachine(object):
 
         self.screen.fill(BLACK)
 
-    def classify(self, img, np_img, category=None):
-        # Classify current image and determine
+    def classify(self, pil_img):
 
-        emb = self._engine.DetectWithImage(img)
+        # Classify current image
+        emb = self._engine.DetectWithImage(pil_img)
         self._buffer.append(self._engine.kNNEmbedding(emb))
         classification = Counter(self._buffer).most_common(1)[0][0]
-        
-        if not classification is None:
-        	displayThumbnail(np_img, self.categoriesImageDic[classification])
 
-        added_message = ""
+        return classification
+
+    def addCategory(self, pil_img, np_img, category=None):
         if category:
             if category == 0 or category == '0':
                 self._engine.clear() # Hitting button 0 resets
             else:
-                self._engine.addEmbedding(emb, category) # otherwise the button # is the class
-                added_message = "ADDED " + category
-                self.categoriesImageDic[category] = cv2.resize(np_img, (200,100))
+                emb = self._engine.DetectWithImage(pil_img)
+                self._engine.addEmbedding(emb, category) 
+                self.categoriesImageDic[category] = cv2.resize(np_img, (0,0), fx=0.3, fy=0.3)
                 #displayThumbnail(np_img, self.categoriesImageDic[category])
-
-        self._frame_times.append(time.time())
-        fps = len(self._frame_times)/float(self._frame_times[-1] - self._frame_times[0] + 0.001)
-
-        # Print/Display results
-
-        status = 'fps: %.1f; #examples: %d; Class: % 7s; '%(
-            fps, self._engine.exampleCount(),
-            classification or 0) + added_message
-        #print(status)
-        return status
 
     def save_trained_model(self):
 
@@ -131,30 +119,57 @@ def main(args):
 
     cam = cv2.VideoCapture(2) #Change it to zero if you have only one camera
     while True:
-        category = None
+        newCategory = None
+
+        # Listening for keyboard/UI events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 teachable.save_trained_model()
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                category = pygame.key.name(event.key)
+                newCategory = pygame.key.name(event.key)
 
-        #Get the image and transform it into a pil image
+        # Get the image  from the camera
         ret, cv2_im = cam.read()
-        new_cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
-        pil_im = Image.fromarray(new_cv2_im)
 
-        #Classify the image
-        status = teachable.classify(pil_im, new_cv2_im, category)
+        # The engine uses pil images as input, so, we need to transform it
+        cv2RGB = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
+        pil_img = Image.fromarray(cv2RGB)
 
-        #Draw the results
-        draw_text(new_cv2_im, status)
-        new_cv2_im = cv2.resize(new_cv2_im, (800, 600))
+        statusMessage  = ""
+
+        # If there is a new category, add it with the image
+        if newCategory:
+            teachable.addCategory(pil_img, cv2_im, newCategory)
+            statusMessage = "ADDED " + newCategory + " category"
+
+        # Else, classify the image
+        else: 
+            classification = teachable.classify(pil_img)
+
+            # And display the thumbnail
+            if classification:
+                displayThumbnail(
+                            cv2_im, 
+                            teachable.categoriesImageDic[classification]
+                            )
+
+        # For getting the FPS and display
+        teachable._frame_times.append(time.time())
+        fps = len(teachable._frame_times)/float(teachable._frame_times[-1] - teachable._frame_times[0] + 0.001)
+
+        status = 'fps: %.1f; #examples: %d; Class: % 7s; '%(
+            fps, teachable._engine.exampleCount(),
+            classification or 0) + statusMessage
+
+        draw_text(cv2_im, status)
+        #new_cv2_im = cv2.resize(new_cv2_im, (800, 600))
 
         #put back the image into the screen using a pygame image
+        cv2RGB = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         pygameimage = pygame.image.frombuffer(
-            new_cv2_im.tostring(), new_cv2_im.shape[1::-1], "RGB")
+            cv2RGB.tostring(), cv2RGB.shape[1::-1], "RGB")
         teachable.screen.blit(pygameimage, (0, 0))
         pygame.display.update()
 
@@ -165,9 +180,9 @@ def draw_text(image_np, label, pos=0):
     cv2.putText(image_np, label, p1, font, 0.8, (0, 0, 0), 2, cv2.LINE_AA)
 
 def displayThumbnail(background, overlay):
-	rows,cols,channels = overlay.shape
-	overlay=cv2.addWeighted(background[250:250+rows, 0:0+cols],0.5,overlay,0.5,0)
-	background[250:250+rows, 0:0+cols ] = overlay
+    rows,cols,channels = overlay.shape
+    #overlay=cv2.addWeighted(background[250:250+rows, 0:0+cols],0.5,overlay,0.5,0) @if transparency is needed
+    background[250:250+rows, 0:0+cols ] = overlay
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
