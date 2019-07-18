@@ -84,8 +84,9 @@ class TeachableMachine(object):
             else:
                 emb = self._engine.DetectWithImage(pil_img)
                 self._engine.addEmbedding(emb, category) 
-                self.categoriesImageDic[category] = cv2.resize(np_img, (0,0), fx=0.3, fy=0.3)
-                #displayThumbnail(np_img, self.categoriesImageDic[category])
+                if not category in self.categoriesImageDic:
+                    self.categoriesImageDic[category] = cv2.resize(np_img, (0,0), fx=0.3, fy=0.3)
+                    #displayThumbnail(np_img, self.categoriesImageDic[category])
 
     def save_trained_model(self):
 
