@@ -39,6 +39,7 @@ import time
 import cv2
 import pygame
 import numpy as np
+import pickle
 
 from collections import deque, Counter
 from functools import partial
@@ -51,22 +52,61 @@ from embedding import kNNEmbeddingEngine
 class TeachableMachine(object):
 
     def __init__(self, model_path, kNN=3, buffer_length=4, session=False):
-        self._engine = kNNEmbeddingEngine(model_path, kNN, session=session)
+        self._engine = kNNEmbeddingEngine(model_path, kNN)
         self._buffer = deque(maxlen=buffer_length)
         self._kNN = kNN
         self._start_time = time.time()
         self._frame_times = deque(maxlen=40)
         self.clean_shutdown = False
         self.session_name = session
-
         self.categoriesImageDic = dict()
 
+        if session:
+            self.load(session)
+        else:
+            print("No session name specified. Saving and loading is disabled")
+
         BLACK = (0, 0, 0)
-        WIDTH = 800
-        HEIGHT = 600
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
+        self.SCREENDIMENSIONS = (800,600)
+
+        self.screen = pygame.display.set_mode(self.SCREENDIMENSIONS, 0, 32)
 
         self.screen.fill(BLACK)
+
+    def load(self, session):
+        print("Loading...")
+        try: 
+
+            # Loading the categories
+            with open(session + ".txt", "r") as file:
+                labels = eval(file.readline())
+                self._engine._labels = labels
+            file.close()
+
+            # Loading the embeddings
+            embs = np.load(session + ".npy")
+            self._engine._embeddings = embs
+            label_count = len(labels)
+
+            # Loading the images dict
+            with open(session + '.pkl', 'rb') as f:
+                self.categoriesImageDic = pickle.load(f)
+            f.close()
+
+            if label_count > 0: 
+                print("Labels count: " + str(len(labels)))
+                print("Embedding count: " + str(len(embs)))
+
+                for i in range(len(labels)): #There must be a more elegant way
+                    self._engine._embedding_map[labels[i]].append(embs[i])
+                if len(self._engine._embedding_map) == label_count:
+                    print("Data loaded correctly")
+            else:
+                print("Could not load data. The source is empty")
+                self._engine.clear()
+
+        except FileNotFoundError:
+            print("File not found. Continuing with an empty session")
 
     def classify(self, pil_img):
 
@@ -92,13 +132,21 @@ class TeachableMachine(object):
 
         if self.session_name:
             print("Saving...")
-            #This sould be on the class or outside here!
-            #print(self._engine._embeddings)
+
+            # TODO: 1. Saving files in folder. 2. Removing labels
+
+            # Saving the embeddings array (This func should be on embeddings class)
             np.save(self.session_name, self._engine._embeddings)
-            #print(type(self._engine._labels))
+            
+            # Saving the categories (maybe not needed now that we have the dict)
             with open(self.session_name + ".txt", "w") as file:
                 file.write(str(self._engine._labels))
+
+            # Saving the dict with thumbnails
+            with open(self.session_name + '.pkl', 'wb') as f:
+                pickle.dump(self.categoriesImageDic, f, pickle.HIGHEST_PROTOCOL)
             print("Done")
+
         else:
             print("No session name given. Saving is disabled")
 
@@ -165,7 +213,7 @@ def main(args):
             classification or 0) + statusMessage
 
         draw_text(cv2_im, status)
-        #new_cv2_im = cv2.resize(new_cv2_im, (800, 600))
+        cv2_im = cv2.resize(cv2_im, teachable.SCREENDIMENSIONS)
 
         #put back the image into the screen using a pygame image
         cv2RGB = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
